@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor Hídrico San Juan — ríos, diques y alertas</title>
+<meta name="description" content="Seguimiento permanente de ríos y diques de la provincia de San Juan (Argentina) con información satelital, y alertas vigentes para la población.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --plano:#f9f9f7; --sup:#fcfcfb; --tinta:#0b0b0b; --tinta2:#52514e; --tenue:#898781; --linea:#e1e0d9;
+  --serie:#2a78d6; --serie-suave:#cde2fb;
+  --bien:#0ca30c; --amarillo:#fab219; --naranja:#ec835a; --rojo:#d03b3b;
+  --f-amarillo:#fff6dd; --f-naranja:#fdebe3; --f-rojo:#fae3e3; --f-bien:#e6f6e6;
+}
+@media (prefers-color-scheme:dark){:root{
+  --plano:#0d0d0d; --sup:#1a1a19; --tinta:#f0efec; --tinta2:#c3c2b7; --tenue:#898781; --linea:#2c2c2a;
+  --serie:#3987e5; --serie-suave:#184f95;
+  --f-amarillo:#3a2e0c; --f-naranja:#3d2318; --f-rojo:#3d1717; --f-bien:#0f2a0f;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plano);color:var(--tinta);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--serie)}
+header.sitio{background:#12324f;color:#fff;padding:20px 16px}
+header.sitio .in,main{max-width:1180px;margin:0 auto}
+header.sitio h1{margin:0;font-size:1.6rem;line-height:1.2}
+header.sitio p{margin:4px 0 0;color:#c9d9e8;font-size:.95rem}
+main{padding:16px}
+h2{font-size:1.25rem;margin:36px 0 4px}
+.sub{color:var(--tinta2);margin:0 0 14px;font-size:.93rem}
+.estado{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem;color:var(--tinta2);margin:10px 0 0}
+.estado b{color:var(--tinta);font-weight:600}
+.punto{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--bien)}
+.punto.mal{background:var(--rojo)}
+.aviso-legal{border:1px solid var(--linea);background:var(--sup);border-radius:10px;padding:10px 14px;font-size:.88rem;color:var(--tinta2);margin-top:14px}
+.aviso-legal b{color:var(--tinta)}
+
+/* alertas */
+.alerta{border-radius:12px;padding:14px 16px;margin:10px 0;border:1px solid var(--linea);border-left-width:8px;background:var(--sup)}
+.alerta.amarillo{border-left-color:var(--amarillo);background:var(--f-amarillo)}
+.alerta.naranja{border-left-color:var(--naranja);background:var(--f-naranja)}
+.alerta.rojo{border-left-color:var(--rojo);background:var(--f-rojo)}
+.alerta.bien{border-left-color:var(--bien);background:var(--f-bien)}
+.alerta h3{margin:4px 0 6px;font-size:1.08rem}
+.alerta p{margin:4px 0;font-size:.93rem}
+.alerta details{font-size:.88rem;color:var(--tinta2);margin-top:6px}
+.etq{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:99px;border:1px solid var(--tinta);margin-right:6px;background:var(--sup);color:var(--tinta)}
+.etq i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.etq.gris{border-color:var(--tenue);font-weight:600;color:var(--tinta2)}
+.meta{font-size:.85rem;color:var(--tinta2)}
+
+/* mapa */
+#mapa{height:440px;border-radius:12px;border:1px solid var(--linea);z-index:0}
+.leaflet-container{font:inherit}
+
+/* tarjetas */
+.grilla{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.tarj{background:var(--sup);border:1px solid var(--linea);border-radius:12px;padding:14px;min-width:0}
+.tarj h3{margin:0;font-size:1.05rem}
+.tarj .lugar{color:var(--tinta2);font-size:.86rem;margin:0 0 8px}
+.cifra{font-size:1.9rem;font-weight:650;line-height:1.1}
+.cifra small{font-size:.95rem;font-weight:500;color:var(--tinta2)}
+.fila{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.86rem;color:var(--tinta2);margin:6px 0 8px}
+.fila b{color:var(--tinta);font-weight:600}
+.tend{font-weight:600;color:var(--tinta)}
+.foto{width:100%;aspect-ratio:16/10;object-fit:contain;border-radius:8px;border:1px solid var(--linea);display:block;margin-bottom:10px;background:#1a1a19}
+.pie{font-size:.78rem;color:var(--tenue);margin:6px 0 0}
+.barra{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin:4px 0 2px}
+.barra span{display:block;height:100%;background:var(--serie);border-radius:4px}
+.filtros{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap;align-items:center;font-size:.88rem;color:var(--tinta2)}
+.filtros button{font:inherit;font-size:.86rem;padding:4px 12px;border-radius:99px;border:1px solid var(--linea);background:var(--sup);color:var(--tinta);cursor:pointer}
+.filtros button[aria-pressed=true]{background:var(--tinta);color:var(--sup);border-color:var(--tinta)}
+
+/* gráficos */
+.graf{position:relative}
+.graf svg{display:block;width:100%;height:auto;overflow:visible}
+.graf text{font-size:11px;fill:var(--tenue)}
+.tip{position:absolute;pointer-events:none;background:var(--tinta);color:var(--sup);font-size:.78rem;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-130%);display:none;z-index:2}
+.ley{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--tinta2);margin-top:4px}
+.ley span::before{content:"";display:inline-block;width:18px;height:0;border-top:2px solid var(--serie);vertical-align:middle;margin-right:5px}
+.ley span.pron::before{border-top-style:dashed}
+.ley span.umb::before{border-top:2px dotted var(--amarillo)}
+
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:var(--sup)}
+th,td{padding:6px 10px;border-bottom:1px solid var(--linea);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+th{font-weight:600;color:var(--tinta2);font-size:.8rem}
+.tabla{overflow-x:auto;border:1px solid var(--linea);border-radius:12px}
+td.ll1{background:var(--f-amarillo);font-weight:600} td.ll2{background:var(--f-naranja);font-weight:600} td.ll3{background:var(--f-rojo);font-weight:600}
+details.datos{margin-top:8px;font-size:.84rem} details.datos summary{cursor:pointer;color:var(--tinta2)}
+footer{max-width:1180px;margin:30px auto 0;padding:16px;font-size:.84rem;color:var(--tinta2);border-top:1px solid var(--linea)}
+footer li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<header class="sitio"><div class="in">
+  <h1>Monitor Hídrico San Juan</h1>
+  <p>Ríos, diques y alertas de la provincia de San Juan, Argentina — seguimiento permanente con información satelital</p>
+</div></header>
+
+<main>
+  <div class="estado" id="estado"></div>
+
+  <h2>Alertas vigentes</h2>
+  <div id="alertas"></div>
+  <div class="aviso-legal"><b>Este sitio es informativo y no reemplaza a los organismos oficiales.</b>
+    Ante una emergencia llame al <b>911</b> o a Protección Civil (<b>103</b>). Las alertas marcadas «Oficial SMN» provienen del
+    Servicio Meteorológico Nacional; las marcadas «Automática» se calculan con modelos y satélites y son orientativas.</div>
+
+  <h2>Mapa</h2>
+  <p class="sub">Elija la capa «Imagen satelital del día» (arriba a la derecha) para ver la última pasada diaria de los satélites de la NASA.</p>
+  <div id="mapa"></div>
+
+  <h2>Diques y embalses</h2>
+  <p class="sub">Superficie del espejo de agua medida sobre imágenes del satélite Sentinel-2 (programa Copernicus, ESA). Hay una pasada útil cada 3 a 10 días, según la nubosidad.</p>
+  <div class="filtros" id="rango" role="group" aria-label="Período del gráfico">Período:
+    <button data-d="365" aria-pressed="true">1 año</button><button data-d="1095" aria-pressed="false">3 años</button><button data-d="0" aria-pressed="false">Todo (desde 2017)</button></div>
+  <div class="grilla" id="embalses"></div>
+
+  <h2>Ríos</h2>
+  <p class="sub">Caudal estimado de los últimos 3 meses y pronóstico a 15 días del modelo hidrológico global GloFAS (Copernicus), alimentado con datos satelitales y meteorológicos. Son estimaciones de modelo, no mediciones en el río.</p>
+  <div class="grilla" id="rios"></div>
+
+  <h2>Lluvia pronosticada</h2>
+  <p class="sub">Milímetros acumulados por día. En San Juan, lluvias de 20 mm o más en un día pueden provocar crecientes repentinas en quebradas, ríos secos y badenes.</p>
+  <div class="tabla" id="lluvia"></div>
+
+  <h2>Historial de alertas</h2>
+  <div class="tabla" id="historial"></div>
+</main>
+
+<footer>
+  <b>Fuentes y método</b>
+  <ul>
+    <li><b>Embalses:</b> imágenes Sentinel-2 L2A (Copernicus/ESA) del catálogo abierto Earth Search. El agua se detecta con el índice MNDWI a 20 m por píxel. Se informa superficie (km²), no cota ni volumen; el «% del máximo» compara con la mayor superficie observada desde 2017.</li>
+    <li><b>Ríos:</b> Global Flood Awareness System (GloFAS, Copernicus Emergency Management Service) a través de la API de Open-Meteo. Los umbrales amarillo, naranja y rojo corresponden a crecidas con período de retorno de 2, 5 y 20 años del propio modelo (1984 en adelante). El modelo no representa la regulación de los diques.</li>
+    <li><b>Alertas oficiales:</b> Servicio Meteorológico Nacional (SMN), canal público CAP. <a href="https://www.smn.gob.ar/alertas" rel="noopener">smn.gob.ar/alertas</a></li>
+    <li><b>Lluvia:</b> pronóstico de Open-Meteo. <b>Mapa:</b> NASA GIBS (VIIRS), Esri World Imagery, © OpenStreetMap.</li>
+  </ul>
+  Los datos se actualizan solos cada 2 horas. Código abierto del proyecto en GitHub.
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data/datos.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const nf = (x, d = 1) => x == null ? "—" : Number(x).toLocaleString("es-AR", {minimumFractionDigits: d, maximumFractionDigits: d});
+const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fd = iso => { const [a, m, d] = iso.slice(0, 10).split("-"); return `${+d} ${MES[m - 1]} ${a}`; };
+const fdc = iso => { const [, m, d] = iso.slice(0, 10).split("-"); return `${+d} ${MES[m - 1]}`; };
+const fh = iso => iso && iso.length > 10 ? `${fdc(iso)} ${iso.slice(11, 16)} h` : (iso ? fd(iso) : "");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const signo = v => v == null ? "—" : (v > 0 ? "+" : "") + nf(v, Math.abs(v) < 10 ? 1 : 0) + " %";
+const TEND = {creciendo: "▲ Creciendo", bajando: "▼ Bajando", estable: "● Estable"};
+const NIVEL = {amarillo: "Alerta amarilla", naranja: "Alerta naranja", rojo: "Alerta roja"};
+let dias = 365, mapa, capaDatos;
+
+/* ───── gráfico de línea (SVG) con cursor y etiqueta al pasar el mouse ───── */
+function grafico(el, {serie, pron = [], umbral = null, unidad, dec = 1}) {
+  const W = 520, H = 190, m = {t: 10, r: 12, b: 22, l: 44};
+  const todos = serie.concat(pron);
+  if (todos.length < 2) { el.innerHTML = '<p class="pie">Aún no hay datos suficientes.</p>'; return; }
+  const t = p => Date.parse(p[0] + "T12:00:00Z");
+  const t0 = t(todos[0]), t1 = t(todos[todos.length - 1]);
+  let max = Math.max(...todos.map(p => p[1]));
+  const verUmbral = umbral && max >= umbral.v * 0.6;
+  if (verUmbral) max = Math.max(max, umbral.v);
+  max = max * 1.08 || 1;
+  const paso = Math.pow(10, Math.floor(Math.log10(max / 3)));
+  const salto = [1, 2, 5, 10].map(k => k * paso).find(s => max / s <= 4.5);
+  const x = v => m.l + (v - t0) / (t1 - t0 || 1) * (W - m.l - m.r), y = v => H - m.b - v / max * (H - m.t - m.b);
+  const camino = ps => ps.map((p, i) => (i ? "L" : "M") + x(t(p)).toFixed(1) + " " + y(p[1]).toFixed(1)).join("");
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de ${esc(unidad)} en el tiempo">`;
+  for (let v = 0; v <= max; v += salto)
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--linea)"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${nf(v, salto < 0.1 ? 2 : salto < 1 ? 1 : 0)}</text>`;
+  const n = 4, largo = (t1 - t0) / 864e5;
+  for (let i = 0; i <= n; i++) {
+    const d = new Date(t0 + (t1 - t0) * i / n), e = d.toISOString();
+    s += `<text x="${x(d.getTime())}" y="${H - 5}" text-anchor="${i == 0 ? "start" : i == n ? "end" : "middle"}">${largo > 500 ? MES[d.getUTCMonth()] + " " + e.slice(0, 4) : fdc(e)}</text>`;
+  }
+  if (verUmbral) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(umbral.v)}" y2="${y(umbral.v)}" stroke="var(--amarillo)" stroke-width="2" stroke-dasharray="2 4"/><text x="${m.l + 4}" y="${y(umbral.v) - 5}" style="fill:var(--tinta2)">${esc(umbral.t)}</text>`;
+  if (pron.length) {
+    const xi = x(t(serie[serie.length - 1]));
+    s += `<line x1="${xi}" x2="${xi}" y1="${m.t}" y2="${H - m.b}" stroke="var(--tenue)" stroke-dasharray="1 3"/><text x="${xi + 4}" y="${m.t + 9}">pronóstico →</text>`;
+    s += `<path d="${camino([serie[serie.length - 1]].concat(pron))}" fill="none" stroke="var(--serie)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>`;
+  }
+  s += `<path d="${camino(serie)}" fill="none" stroke="var(--serie)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if (serie.length < 80) s += serie.map(p => `<circle cx="${x(t(p))}" cy="${y(p[1])}" r="2.2" fill="var(--serie)"/>`).join("");
+  s += `<line class="cur" y1="${m.t}" y2="${H - m.b}" stroke="var(--tenue)" style="display:none"/><circle class="pt" r="5" fill="var(--serie)" stroke="var(--sup)" stroke-width="2" style="display:none"/>`;
+  s += `<rect x="${m.l}" y="0" width="${W - m.l - m.r}" height="${H}" fill="transparent"/></svg><div class="tip"></div>`;
+  el.innerHTML = s;
+  const svg = el.querySelector("svg"), tip = el.querySelector(".tip"), cur = el.querySelector(".cur"), pt = el.querySelector(".pt");
+  const mover = ev => {
+    const r = svg.getBoundingClientRect(), px = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) / r.width * W;
+    let mejor = todos[0], dm = 1e9;
+    for (const p of todos) { const d = Math.abs(x(t(p)) - px); if (d < dm) { dm = d; mejor = p; } }
+    const cx = x(t(mejor)), cy = y(mejor[1]);
+    cur.setAttribute("x1", cx); cur.setAttribute("x2", cx); pt.setAttribute("cx", cx); pt.setAttribute("cy", cy);
+    cur.style.display = pt.style.display = "";
+    tip.style.display = "block"; tip.style.left = Math.min(Math.max(cx / W * 100, 14), 86) + "%"; tip.style.top = cy / H * 100 + "%";
+    tip.textContent = `${fd(mejor[0])}: ${nf(mejor[1], dec)} ${unidad}${pron.includes(mejor) ? " (pronóstico)" : ""}`;
+  };
+  const salir = () => { tip.style.display = "none"; cur.style.display = pt.style.display = "none"; };
+  svg.addEventListener("mousemove", mover); svg.addEventListener("touchstart", mover, {passive: true});
+  svg.addEventListener("touchmove", mover, {passive: true}); svg.addEventListener("mouseleave", salir);
+}
+
+function tablaDatos(filas, cab) {
+  return `<details class="datos"><summary>Ver datos en tabla</summary><table><tr>${cab.map((c, i) => `<th${i ? ' class="n"' : ""}>${c}</th>`).join("")}</tr>` +
+    filas.map(f => `<tr>${f.map((c, i) => `<td${i ? ' class="n"' : ""}>${c}</td>`).join("")}</tr>`).join("") + "</table></details>";
+}
+
+/* ───── secciones ───── */
+function pintarEstado(D) {
+  const f = D.fuentes_ok || {}, n = {satelite: "Satélite", rios: "Ríos", lluvia: "Lluvia", smn: "SMN"};
+  const horas = (Date.now() - Date.parse(D.generado)) / 36e5;
+  $("#estado").innerHTML = `<span>Última actualización: <b>${fh(D.generado)}</b>${horas > 8 ? " — <b>datos demorados</b>" : ""}</span>` +
+    Object.keys(n).map(k => `<span><i class="punto ${f[k] === false ? "mal" : ""}"></i>${n[k]}: ${f[k] === false ? "sin conexión en la última actualización" : "al día"}</span>`).join("");
+}
+
+function pintarAlertas(D) {
+  const A = D.alertas || [];
+  if (!A.length) {
+    $("#alertas").innerHTML = `<div class="alerta bien"><span class="etq"><i style="background:var(--bien)"></i>✓ Sin alertas</span><h3>No hay alertas vigentes para la provincia de San Juan</h3><p class="meta">Ni el SMN ni el monitoreo automático de ríos, lluvias y embalses registran alertas en este momento.</p></div>`;
+    return;
+  }
+  $("#alertas").innerHTML = A.map(a => `<div class="alerta ${a.nivel}">
+    <span class="etq"><i style="background:var(--${a.nivel})"></i>⚠ ${NIVEL[a.nivel]}</span><span class="etq gris">${a.oficial ? "Oficial SMN" : "Automática · no oficial"}</span>
+    <h3>${esc(a.titulo)}</h3><p>${esc(a.detalle)}</p>
+    ${a.zonas && a.zonas.length ? `<p class="meta"><b>Zonas:</b> ${esc(a.zonas.join(", "))}</p>` : ""}
+    <p class="meta">${a.desde ? "<b>Desde:</b> " + fh(a.desde) : ""}${a.hasta ? " · <b>Hasta:</b> " + fh(a.hasta) : ""}${a.url ? ` · <a href="${esc(a.url)}" rel="noopener">Ver en la fuente oficial</a>` : ""}</p>
+    ${a.instruccion ? `<details><summary>Recomendaciones</summary><p>${esc(a.instruccion)}</p></details>` : ""}</div>`).join("");
+}
+
+function pintarEmbalses(D) {
+  $("#embalses").innerHTML = (D.embalses || []).map(e => `<article class="tarj" id="e-${e.id}">
+    <h3>${esc(e.nombre)}</h3><p class="lugar">${esc(e.rio)} · ${esc(e.depto)}</p>
+    <img class="foto" loading="lazy" src="data/img/${e.id}.jpg?f=${e.imagen_fecha || ""}" alt="Imagen satelital de ${esc(e.nombre)} del ${e.imagen_fecha ? fd(e.imagen_fecha) : ""}; el borde celeste marca el agua detectada" onerror="this.style.display='none'">
+    <div class="cifra">${nf(e.ultimo.km2, 2)} <small>km² de espejo de agua</small></div>
+    <div class="barra" title="Porcentaje del máximo observado"><span style="width:${Math.min(100, e.pct_maximo || 0)}%"></span></div>
+    <div class="fila"><span><b>${nf(e.pct_maximo, 0)} %</b> del máximo observado (${nf(e.maximo.km2, 2)} km², ${fd(e.maximo.fecha)})</span></div>
+    <div class="fila"><span class="tend">${TEND[e.tendencia]}</span><span>30 días: <b>${signo(e.var_30d)}</b></span><span>1 año: <b>${signo(e.var_anual)}</b></span></div>
+    <div class="graf"></div>
+    <p class="pie">Última pasada útil del satélite: ${fd(e.ultimo.fecha)}. Borde celeste en la imagen = agua detectada.</p>
+    ${tablaDatos(e.serie.slice(-12).reverse().map(p => [fd(p[0]), nf(p[1], 2)]), ["Fecha", "km²"])}</article>`).join("");
+  for (const e of D.embalses || []) {
+    const corte = dias ? new Date(Date.now() - dias * 864e5).toISOString().slice(0, 10) : "0";
+    grafico($(`#e-${e.id} .graf`), {serie: e.serie.filter(p => p[0] >= corte), unidad: "km²", dec: 2});
+  }
+}
+
+function pintarRios(D) {
+  $("#rios").innerHTML = (D.rios || []).map(r => `<article class="tarj" id="r-${r.id}">
+    <h3>${esc(r.nombre)}</h3><p class="lugar">${esc(r.lugar)}</p>
+    ${r.nivel ? `<span class="etq"><i style="background:var(--${r.nivel})"></i>⚠ ${NIVEL[r.nivel]}</span>` : ""}
+    <div class="cifra">${nf(r.hoy, r.hoy < 10 ? 1 : 0)} <small>m³/s estimados hoy</small></div>
+    <div class="fila"><span class="tend">${TEND[r.tendencia]}</span><span>7 días: <b>${signo(r.var_7d)}</b></span><span>Normal del mes: <b>${nf(r.normal, 0)} m³/s</b></span></div>
+    <div class="fila"><span>Pico previsto: <b>${nf(r.pico.q, 0)} m³/s</b> (${fdc(r.pico.fecha)})</span><span>Umbral amarillo: <b>${nf(r.umbrales.amarillo, 0)} m³/s</b></span></div>
+    <div class="graf"></div>
+    <div class="ley"><span>Estimado</span><span class="pron">Pronóstico</span><span class="umb">Umbral amarillo</span></div>
+    ${tablaDatos(r.pronostico.map(p => [fd(p[0]), nf(p[1], 1), nf(p[2], 1)]), ["Fecha", "m³/s previsto", "Máximo posible"])}</article>`).join("");
+  for (const r of D.rios || [])
+    grafico($(`#r-${r.id} .graf`), {serie: r.serie, pron: r.pronostico, unidad: "m³/s", umbral: {v: r.umbrales.amarillo, t: "umbral amarillo"}});
+}
+
+function pintarLluvia(D) {
+  const L = D.lluvia || []; if (!L.length) { $("#lluvia").innerHTML = ""; return; }
+  const u = (D.umbrales || {}).lluvia_mm_24h || {amarillo: 20, naranja: 40, rojo: 70};
+  const cl = mm => mm >= u.rojo ? "ll3" : mm >= u.naranja ? "ll2" : mm >= u.amarillo ? "ll1" : "";
+  $("#lluvia").innerHTML = `<table><tr><th>Localidad</th>${L[0].dias.map(d => `<th class="n">${fdc(d[0])}</th>`).join("")}</tr>` +
+    L.map(l => `<tr><td>${esc(l.nombre)}</td>${l.dias.map(d => `<td class="n ${cl(d[1])}">${nf(d[1], 1)} mm</td>`).join("")}</tr>`).join("") + "</table>";
+}
+
+function pintarHistorial(D) {
+  const H = D.historial_alertas || [];
+  $("#historial").innerHTML = H.length ? `<table><tr><th>Emitida</th><th>Nivel</th><th>Alerta</th><th>Origen</th><th>Zonas</th></tr>` +
+    H.map(h => `<tr><td>${fh(h.emitida)}</td><td><span class="etq"><i style="background:var(--${h.nivel})"></i>${h.nivel}</span></td><td>${esc(h.titulo)}</td><td>${h.oficial ? "SMN (oficial)" : "Automática"}</td><td>${esc((h.zonas || []).slice(0, 6).join(", "))}${(h.zonas || []).length > 6 ? "…" : ""}</td></tr>`).join("") + "</table>"
+    : `<p class="pie" style="padding:10px 14px">Todavía no se registraron alertas desde la puesta en marcha del sitio.</p>`;
+}
+
+function pintarMapa(D) {
+  if (!window.L) return;
+  if (!mapa) {
+    mapa = L.map("mapa", {scrollWheelZoom: false}).setView([-30.95, -68.75], 7);
+    const ayer = new Date(Date.now() - 30 * 36e5).toISOString().slice(0, 10);
+    const calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 18, attribution: "© OpenStreetMap"}).addTo(mapa);
+    const esri = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {maxZoom: 18, attribution: "Imágenes © Esri, Maxar, Earthstar Geographics"});
+    const gibs = L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${ayer}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, {maxNativeZoom: 9, maxZoom: 12, attribution: `NASA GIBS · VIIRS ${ayer}`});
+    L.control.layers({"Mapa": calles, "Satélite (alta resolución)": esri, "Imagen satelital del día": gibs}).addTo(mapa);
+    capaDatos = L.layerGroup().addTo(mapa);
+  }
+  capaDatos.clearLayers();
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  for (const a of D.alertas || []) for (const p of a.poligonos || [])
+    L.polygon(p, {color: css("--" + a.nivel), weight: 2, fillOpacity: .18}).bindPopup(`<b>${NIVEL[a.nivel]}</b><br>${esc(a.titulo)}`).addTo(capaDatos);
+  for (const e of D.embalses || [])
+    L.circleMarker([e.lat, e.lon], {radius: 9, color: "#fff", weight: 2, fillColor: css("--serie"), fillOpacity: 1})
+      .bindPopup(`<b>${esc(e.nombre)}</b><br>${nf(e.ultimo.km2, 2)} km² · ${nf(e.pct_maximo, 0)} % del máximo<br>${TEND[e.tendencia]} (${fd(e.ultimo.fecha)})`).addTo(capaDatos);
+  for (const r of D.rios || [])
+    L.circleMarker([r.lat, r.lon], {radius: 6, color: "#fff", weight: 2, fillColor: r.nivel ? css("--" + r.nivel) : "#12324f", fillOpacity: 1})
+      .bindPopup(`<b>${esc(r.nombre)}</b> — ${esc(r.lugar)}<br>${nf(r.hoy, 0)} m³/s estimados · ${TEND[r.tendencia]}${r.nivel ? "<br><b>" + NIVEL[r.nivel] + "</b>" : ""}`).addTo(capaDatos);
+}
+
+function pintar(D) {
+  if (!D) { $("#alertas").innerHTML = '<div class="alerta"><h3>No se pudieron cargar los datos</h3><p>Vuelva a intentar en unos minutos.</p></div>'; return; }
+  pintarEstado(D); pintarAlertas(D); pintarEmbalses(D); pintarRios(D); pintarLluvia(D); pintarHistorial(D); pintarMapa(D);
+}
+
+$("#rango").addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  dias = +b.dataset.d;
+  document.querySelectorAll("#rango button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  pintarEmbalses(window.DATOS);
+});
+
+pintar(window.DATOS);
+/* vuelve a consultar los datos cada 10 minutos sin recargar la página */
+if (location.protocol.startsWith("http")) setInterval(() => {
+  fetch("data/datos.json?t=" + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (d && d.generado !== (window.DATOS || {}).generado) { window.DATOS = d; pintar(d); } }).catch(() => {});
+}, 6e5);
+</script>
+</body>
+</html>

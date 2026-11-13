@@ -1,0 +1,37 @@
+[
+ {
+  "id": "5c51b3954c9a",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Tormentas",
+  "zonas": [
+   "Valle Fértil",
+   "Caucete",
+   "25 de Mayo",
+   "Angaco",
+   "San Martín",
+   "Jáchal",
+   "9 de Julio",
+   "Albardón",
+   "Santa Lucía"
+  ],
+  "desde": "2026-11-13T21:00:00-03:00",
+  "hasta": "2026-11-14T08:59:59-03:00",
+  "emitida": "2026-11-13T11:47-03:00"
+ },
+ {
+  "id": "5dfd0744b52a",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "naranja",
+  "titulo": "Alerta SMN: Tormentas",
+  "zonas": [
+   "Valle Fértil",
+   "Caucete"
+  ],
+  "desde": "2026-11-14T03:00:00-03:00",
+  "hasta": "2026-11-14T08:59:59-03:00",
+  "emitida": "2026-11-13T11:47-03:00"
+ }
+]

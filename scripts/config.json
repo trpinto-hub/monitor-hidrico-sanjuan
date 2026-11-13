@@ -1,0 +1,39 @@
+{
+  "embalses": [
+    {"id": "ullum", "nombre": "Dique de Ullum", "rio": "Río San Juan", "depto": "Ullum / Zonda", "lat": -31.474, "lon": -68.665, "bbox": [-68.745, -31.525, -68.615, -31.425]},
+    {"id": "punta_negra", "nombre": "Dique Punta Negra", "rio": "Río San Juan", "depto": "Ullum / Zonda", "lat": -31.517, "lon": -68.83, "bbox": [-68.975, -31.565, -68.785, -31.475]},
+    {"id": "caracoles", "nombre": "Dique Los Caracoles", "rio": "Río San Juan", "depto": "Ullum / Zonda", "lat": -31.50, "lon": -68.99, "bbox": [-69.06, -31.56, -68.965, -31.385]},
+    {"id": "cuesta_del_viento", "nombre": "Dique Cuesta del Viento", "rio": "Río Jáchal", "depto": "Iglesia", "lat": -30.19, "lon": -69.07, "bbox": [-69.15, -30.245, -69.02, -30.125]},
+    {"id": "san_agustin", "nombre": "Dique San Agustín", "rio": "Río Valle Fértil", "depto": "Valle Fértil", "lat": -30.636, "lon": -67.479, "bbox": [-67.505, -30.655, -67.455, -30.615]}
+  ],
+  "rios": [
+    {"id": "sanjuan_gsj", "nombre": "Río San Juan", "lugar": "Gran San Juan (aguas abajo de Ullum)", "lat": -31.475, "lon": -68.575},
+    {"id": "sanjuan_caracoles", "nombre": "Río San Juan", "lugar": "Ingreso a Los Caracoles", "lat": -31.475, "lon": -69.075},
+    {"id": "lospatos", "nombre": "Río Los Patos", "lugar": "Barreal (Calingasta)", "lat": -31.625, "lon": -69.525},
+    {"id": "castano", "nombre": "Río Castaño", "lugar": "Villa Nueva (Calingasta)", "lat": -31.175, "lon": -69.525},
+    {"id": "jachal", "nombre": "Río Jáchal", "lugar": "San José de Jáchal", "lat": -30.225, "lon": -68.775},
+    {"id": "bermejo", "nombre": "Río Bermejo", "lugar": "Este provincial (Jáchal / Valle Fértil)", "lat": -30.725, "lon": -67.925},
+    {"id": "sanjuan_sur", "nombre": "Río San Juan", "lugar": "Curso inferior (Sarmiento / 25 de Mayo)", "lat": -32.025, "lon": -68.325}
+  ],
+  "localidades": [
+    {"nombre": "Ciudad de San Juan", "lat": -31.537, "lon": -68.525},
+    {"nombre": "Villa Ibáñez (Ullum)", "lat": -31.455, "lon": -68.71},
+    {"nombre": "Caucete", "lat": -31.652, "lon": -68.281},
+    {"nombre": "Media Agua (Sarmiento)", "lat": -31.98, "lon": -68.425},
+    {"nombre": "Barreal (Calingasta)", "lat": -31.65, "lon": -69.47},
+    {"nombre": "Calingasta", "lat": -31.333, "lon": -69.42},
+    {"nombre": "San José de Jáchal", "lat": -30.24, "lon": -68.745},
+    {"nombre": "Rodeo (Iglesia)", "lat": -30.21, "lon": -69.135},
+    {"nombre": "San Agustín de Valle Fértil", "lat": -30.633, "lon": -67.467},
+    {"nombre": "Santa Rosa (25 de Mayo)", "lat": -31.74, "lon": -68.31},
+    {"nombre": "Villa San Martín (Albardón)", "lat": -31.435, "lon": -68.525},
+    {"nombre": "Los Berros (Sarmiento)", "lat": -31.95, "lon": -68.65}
+  ],
+  "umbrales": {
+    "lluvia_mm_24h": {"amarillo": 20, "naranja": 40, "rojo": 70},
+    "rio_periodo_retorno_anios": {"amarillo": 2, "naranja": 5, "rojo": 20},
+    "embalse_pct_maximo": 97,
+    "embalse_crecimiento_pct": 10,
+    "embalse_crecimiento_dias": 12
+  }
+}
