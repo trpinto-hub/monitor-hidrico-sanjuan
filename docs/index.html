@@ -179,9 +179,8 @@ const DESHIELO = {bajo: "bajo", moderado: "moderado", alto: "alto"};
 function lineaDeshielo(r) {
   const d = r.deshielo;
   if (!d || d.nivel == null) return "";
-  const t = d.t_max != null ? `, hasta ${nf(d.t_max, 0)} °C en altura` : "";
   const f = d.iso0_fecha ? ` (${fdc(d.iso0_fecha)})` : "";
-  return `<div class="deshielo d-${d.nivel}"><span class="rdot"></span>Deshielo en la cuenca alta: <b>${DESHIELO[d.nivel]}</b> — la isoterma de 0 °C sube hasta ~${nf(d.iso0_max, 0)} m${f}${t}. Cuanto más alta, más nieve se derrite.</div>`;
+  return `<div class="deshielo d-${d.nivel}"><span class="rdot"></span>Deshielo en la cuenca alta: <b>${DESHIELO[d.nivel]}</b> — la isoterma de 0 °C (cota por debajo de la cual la nieve se derrite) sube hasta ~${nf(d.iso0_max, 0)} m${f}. Cuanto más alta, mayor el empuje del deshielo.</div>`;
 }
 let dias = 365, mapa, capaDatos;
 
