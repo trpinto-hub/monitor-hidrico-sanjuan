@@ -32,7 +32,7 @@
   "umbrales": {
     "lluvia_mm_24h": {"amarillo": 20, "naranja": 40, "rojo": 70},
     "rio_periodo_retorno_anios": {"amarillo": 2, "naranja": 5, "rojo": 20},
-    "deshielo_isoterma0_m": {"moderado": 3000, "alto": 4200},
+    "deshielo_isoterma0_m": {"moderado": 3800, "alto": 5000},
     "embalse_pct_maximo": 97,
     "embalse_crecimiento_pct": 10,
     "embalse_crecimiento_dias": 12
