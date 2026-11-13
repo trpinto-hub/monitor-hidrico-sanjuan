@@ -67,6 +67,15 @@ h2{font-size:1.25rem;margin:36px 0 4px}
 .pie{font-size:.78rem;color:var(--tenue);margin:6px 0 0}
 .barra{height:8px;border-radius:4px;background:var(--linea);overflow:hidden;margin:4px 0 2px}
 .barra span{display:block;height:100%;background:var(--serie);border-radius:4px}
+/* riesgo de desborde (río) */
+.riesgo{border:1px solid var(--linea);border-left-width:6px;border-radius:8px;padding:8px 11px;margin:2px 0 10px;font-size:.88rem;background:var(--sup)}
+.riesgo b{color:var(--tinta);font-weight:600}
+.riesgo .rdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.riesgo .rtxt{display:block;color:var(--tinta2);margin-top:3px;font-size:.84rem}
+.riesgo.r-bien{border-left-color:var(--bien);background:var(--f-bien)} .riesgo.r-bien .rdot{background:var(--bien)}
+.riesgo.r-amarillo{border-left-color:var(--amarillo);background:var(--f-amarillo)} .riesgo.r-amarillo .rdot{background:var(--amarillo)}
+.riesgo.r-naranja{border-left-color:var(--naranja);background:var(--f-naranja)} .riesgo.r-naranja .rdot{background:var(--naranja)}
+.riesgo.r-rojo{border-left-color:var(--rojo);background:var(--f-rojo)} .riesgo.r-rojo .rdot{background:var(--rojo)}
 .filtros{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap;align-items:center;font-size:.88rem;color:var(--tinta2)}
 .filtros button{font:inherit;font-size:.86rem;padding:4px 12px;border-radius:99px;border:1px solid var(--linea);background:var(--sup);color:var(--tinta);cursor:pointer}
 .filtros button[aria-pressed=true]{background:var(--tinta);color:var(--sup);border-color:var(--tinta)}
@@ -118,7 +127,7 @@ footer li{margin-bottom:4px}
   <div class="grilla" id="embalses"></div>
 
   <h2>Ríos</h2>
-  <p class="sub">Caudal estimado de los últimos 3 meses y pronóstico a 15 días del modelo hidrológico global GloFAS (Copernicus), alimentado con datos satelitales y meteorológicos. Son estimaciones de modelo, no mediciones en el río.</p>
+  <p class="sub">Caudal estimado de los últimos 3 meses y pronóstico a 15 días del modelo hidrológico global GloFAS (Copernicus), alimentado con datos satelitales y meteorológicos. El <b>riesgo de desborde</b> de cada río surge de comparar ese pronóstico con los umbrales de crecida (2, 5 y 20 años). Son estimaciones de modelo, no mediciones en el río.</p>
   <div class="grilla" id="rios"></div>
 
   <h2>Lluvia pronosticada</h2>
@@ -154,7 +163,35 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;
 const signo = v => v == null ? "—" : (v > 0 ? "+" : "") + nf(v, Math.abs(v) < 10 ? 1 : 0) + " %";
 const TEND = {creciendo: "▲ Creciendo", bajando: "▼ Bajando", estable: "● Estable"};
 const NIVEL = {amarillo: "Alerta amarilla", naranja: "Alerta naranja", rojo: "Alerta roja"};
+const RIESGO = {bien: "bajo", amarillo: "moderado", naranja: "alto", rojo: "muy alto"};
 let dias = 365, mapa, capaDatos;
+
+/* ───── riesgo de desborde de un río: compara el pronóstico a 15 días con los umbrales de crecida ───── */
+function riesgoDesborde(r) {
+  const u = r.umbrales || {}, pron = r.pronostico || [];
+  if (u.amarillo == null || !pron.length) return null;
+  let qmax = -1, fecha = null, fmax = -1, fFecha = null;
+  for (const p of pron) {
+    if (p[1] != null && p[1] > qmax) { qmax = p[1]; fecha = p[0]; }   // pronóstico central
+    if (p[2] != null && p[2] > fmax) { fmax = p[2]; fFecha = p[0]; }  // escenario más desfavorable
+  }
+  if (qmax < 0) return null;
+  const nivelDe = q => u.rojo != null && q >= u.rojo ? "rojo" : u.naranja != null && q >= u.naranja ? "naranja" : q >= u.amarillo ? "amarillo" : "bien";
+  const nivel = nivelDe(qmax), nivelPeor = nivelDe(fmax);
+  return {nivel, nivelPeor, qmax, fecha, fmax, fFecha, pct: Math.round(qmax / u.amarillo * 100), u};
+}
+
+function textoProyeccion(rk) {
+  const {nivel, nivelPeor, qmax, fecha, fmax, fFecha, pct, u} = rk;
+  if (nivel === "bien") {
+    let t = `El caudal máximo previsto para los próximos 15 días es <b>${nf(qmax, 0)} m³/s</b> (${fdc(fecha)}), el <b>${pct} %</b> del umbral de alerta (${nf(u.amarillo, 0)} m³/s). Sin indicios de desborde.`;
+    if (nivelPeor !== "bien") t += ` En el escenario más desfavorable del modelo podría acercarse a ${nf(fmax, 0)} m³/s (${fdc(fFecha)}); conviene seguir las fuentes oficiales.`;
+    return t;
+  }
+  const umb = nivel === "rojo" ? u.rojo : nivel === "naranja" ? u.naranja : u.amarillo;
+  const etq = nivel === "rojo" ? "rojo (crecida de 20 años)" : nivel === "naranja" ? "naranja (crecida de 5 años)" : "amarillo (crecida de 2 años)";
+  return `El caudal previsto alcanzaría <b>${nf(qmax, 0)} m³/s</b> el ${fdc(fecha)}, por encima del umbral ${etq} de ${nf(umb, 0)} m³/s. <b>Posible riesgo de desborde:</b> seguí al SMN, a Hidráulica y a Protección Civil.`;
+}
 
 /* ───── gráfico de línea (SVG) con cursor y etiqueta al pasar el mouse ───── */
 function grafico(el, {serie, pron = [], umbral = null, unidad, dec = 1}) {
@@ -257,6 +294,7 @@ function pintarRios(D) {
     <div class="cifra">${nf(r.hoy, r.hoy < 10 ? 1 : 0)} <small>m³/s estimados hoy</small></div>
     <div class="fila"><span class="tend">${TEND[r.tendencia]}</span><span>7 días: <b>${signo(r.var_7d)}</b></span><span>Normal del mes: <b>${nf(r.normal, 0)} m³/s</b></span></div>
     <div class="fila"><span>Pico previsto: <b>${nf(r.pico.q, 0)} m³/s</b> (${fdc(r.pico.fecha)})</span><span>Umbral amarillo: <b>${nf(r.umbrales.amarillo, 0)} m³/s</b></span></div>
+    ${(rk => rk ? `<div class="riesgo r-${rk.nivel}"><span class="rdot"></span><b>Riesgo de desborde: ${RIESGO[rk.nivel]}</b><span class="rtxt">Proyección 15 días: ${textoProyeccion(rk)}</span></div>` : "")(riesgoDesborde(r))}
     <div class="graf"></div>
     <div class="ley"><span>Estimado</span><span class="pron">Pronóstico</span><span class="umb">Umbral amarillo</span></div>
     ${tablaDatos(r.pronostico.map(p => [fd(p[0]), nf(p[1], 1), nf(p[2], 1)]), ["Fecha", "m³/s previsto", "Máximo posible"])}</article>`).join("");
@@ -297,9 +335,11 @@ function pintarMapa(D) {
   for (const e of D.embalses || [])
     L.circleMarker([e.lat, e.lon], {radius: 9, color: "#fff", weight: 2, fillColor: css("--serie"), fillOpacity: 1})
       .bindPopup(`<b>${esc(e.nombre)}</b><br>${nf(e.ultimo.km2, 2)} km² · ${nf(e.pct_maximo, 0)} % del máximo<br>${TEND[e.tendencia]} (${fd(e.ultimo.fecha)})`).addTo(capaDatos);
-  for (const r of D.rios || [])
+  for (const r of D.rios || []) {
+    const rk = riesgoDesborde(r);
     L.circleMarker([r.lat, r.lon], {radius: 6, color: "#fff", weight: 2, fillColor: r.nivel ? css("--" + r.nivel) : "#12324f", fillOpacity: 1})
-      .bindPopup(`<b>${esc(r.nombre)}</b> — ${esc(r.lugar)}<br>${nf(r.hoy, 0)} m³/s estimados · ${TEND[r.tendencia]}${r.nivel ? "<br><b>" + NIVEL[r.nivel] + "</b>" : ""}`).addTo(capaDatos);
+      .bindPopup(`<b>${esc(r.nombre)}</b> — ${esc(r.lugar)}<br>${nf(r.hoy, 0)} m³/s estimados · ${TEND[r.tendencia]}${r.nivel ? "<br><b>" + NIVEL[r.nivel] + "</b>" : ""}${rk ? "<br>Riesgo de desborde: <b>" + RIESGO[rk.nivel] + "</b>" : ""}`).addTo(capaDatos);
+  }
 }
 
 function pintar(D) {
