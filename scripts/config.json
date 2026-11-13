@@ -7,13 +7,13 @@
     {"id": "san_agustin", "nombre": "Dique San Agustín", "rio": "Río Valle Fértil", "depto": "Valle Fértil", "lat": -30.636, "lon": -67.479, "bbox": [-67.505, -30.655, -67.455, -30.615]}
   ],
   "rios": [
-    {"id": "sanjuan_gsj", "nombre": "Río San Juan", "lugar": "Gran San Juan (aguas abajo de Ullum)", "lat": -31.475, "lon": -68.575},
-    {"id": "sanjuan_caracoles", "nombre": "Río San Juan", "lugar": "Ingreso a Los Caracoles", "lat": -31.475, "lon": -69.075},
-    {"id": "lospatos", "nombre": "Río Los Patos", "lugar": "Barreal (Calingasta)", "lat": -31.625, "lon": -69.525},
-    {"id": "castano", "nombre": "Río Castaño", "lugar": "Villa Nueva (Calingasta)", "lat": -31.175, "lon": -69.525},
-    {"id": "jachal", "nombre": "Río Jáchal", "lugar": "San José de Jáchal", "lat": -30.225, "lon": -68.775},
-    {"id": "bermejo", "nombre": "Río Bermejo", "lugar": "Este provincial (Jáchal / Valle Fértil)", "lat": -30.725, "lon": -67.925},
-    {"id": "sanjuan_sur", "nombre": "Río San Juan", "lugar": "Curso inferior (Sarmiento / 25 de Mayo)", "lat": -32.025, "lon": -68.325}
+    {"id": "sanjuan_gsj", "nombre": "Río San Juan", "lugar": "Gran San Juan (aguas abajo de Ullum)", "lat": -31.475, "lon": -68.575, "regimen": "nival", "alta": [-31.95, -70.0]},
+    {"id": "sanjuan_caracoles", "nombre": "Río San Juan", "lugar": "Ingreso a Los Caracoles", "lat": -31.475, "lon": -69.075, "regimen": "nival", "alta": [-31.95, -70.0]},
+    {"id": "lospatos", "nombre": "Río Los Patos", "lugar": "Barreal (Calingasta)", "lat": -31.625, "lon": -69.525, "regimen": "nival", "alta": [-31.8, -70.05]},
+    {"id": "castano", "nombre": "Río Castaño", "lugar": "Villa Nueva (Calingasta)", "lat": -31.175, "lon": -69.525, "regimen": "nival", "alta": [-30.95, -69.9]},
+    {"id": "jachal", "nombre": "Río Jáchal", "lugar": "San José de Jáchal", "lat": -30.225, "lon": -68.775, "regimen": "nival", "alta": [-30.1, -69.55]},
+    {"id": "bermejo", "nombre": "Río Bermejo", "lugar": "Este provincial (Jáchal / Valle Fértil)", "lat": -30.725, "lon": -67.925, "regimen": "arido"},
+    {"id": "sanjuan_sur", "nombre": "Río San Juan", "lugar": "Curso inferior (Sarmiento / 25 de Mayo)", "lat": -32.025, "lon": -68.325, "regimen": "nival", "alta": [-31.95, -70.0]}
   ],
   "localidades": [
     {"nombre": "Ciudad de San Juan", "lat": -31.537, "lon": -68.525},
@@ -32,6 +32,7 @@
   "umbrales": {
     "lluvia_mm_24h": {"amarillo": 20, "naranja": 40, "rojo": 70},
     "rio_periodo_retorno_anios": {"amarillo": 2, "naranja": 5, "rojo": 20},
+    "deshielo_isoterma0_m": {"moderado": 3000, "alto": 4200},
     "embalse_pct_maximo": 97,
     "embalse_crecimiento_pct": 10,
     "embalse_crecimiento_dias": 12

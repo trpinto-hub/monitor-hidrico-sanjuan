@@ -240,9 +240,76 @@ def clima_rios():
     return clima
 
 
+def nivel_deshielo(iso0_max):
+    u = UMB.get("deshielo_isoterma0_m", {"moderado": 3000, "alto": 4200})
+    if iso0_max is None:
+        return None
+    return "alto" if iso0_max >= u["alto"] else "moderado" if iso0_max >= u["moderado"] else "bajo"
+
+
+def deshielo_cuencas():
+    """Presión de deshielo en las nacientes de los ríos nivales.
+
+    Toma de Open-Meteo, en puntos de alta cordillera sobre las cuencas, la
+    temperatura y la altura de la isoterma de 0 °C pronosticadas. Cuanto más alto
+    sube la isoterma de 0 °C, mayor es la superficie del manto de nieve que queda
+    por encima de ella y, por lo tanto, se derrite y aporta caudal. Es un indicador
+    orientativo del empuje del deshielo, complementario al caudal del río.
+    """
+    coords = []
+    for r in CFG["rios"]:
+        if r.get("alta") and tuple(r["alta"]) not in coords:
+            coords.append(tuple(r["alta"]))
+    if not coords:
+        return {}
+    resp = pedir("https://api.open-meteo.com/v1/forecast", params={
+        "latitude": ",".join(str(la) for la, lo in coords),
+        "longitude": ",".join(str(lo) for la, lo in coords),
+        "hourly": "temperature_2m,freezing_level_height",
+        "forecast_days": 7, "timezone": "America/Argentina/San_Juan"}, timeout=60).json()
+    if isinstance(resp, dict):
+        resp = [resp]
+    por_punto = {}
+    for (la, lo), d in zip(coords, resp):
+        h = d.get("hourly", {})
+        diario = {}
+        for t, T, iso in zip(h.get("time", []), h.get("temperature_2m", []), h.get("freezing_level_height", [])):
+            e = diario.setdefault(t[:10], {"tmax": None, "iso": None})
+            if T is not None:
+                e["tmax"] = T if e["tmax"] is None else max(e["tmax"], T)
+            if iso is not None:
+                e["iso"] = iso if e["iso"] is None else max(e["iso"], iso)
+        dias = [[f, diario[f]["iso"], diario[f]["tmax"]] for f in sorted(diario) if f >= HOY.isoformat()][:5]
+        por_punto[(la, lo)] = {"elev": d.get("elevation"), "dias": dias}
+    salida = {}
+    for r in CFG["rios"]:
+        if not r.get("alta"):
+            continue
+        p = por_punto.get(tuple(r["alta"]))
+        isos = [d[1] for d in p["dias"] if d[1] is not None] if p else []
+        if not isos:
+            continue
+        iso_max = max(isos)
+        pico = max((d for d in p["dias"] if d[1] is not None), key=lambda d: d[1])
+        t_max = max((d[2] for d in p["dias"] if d[2] is not None), default=None)
+        salida[r["id"]] = {
+            "nivel": nivel_deshielo(iso_max), "iso0_max": round(iso_max), "iso0_fecha": pico[0],
+            "t_max": round(t_max, 1) if t_max is not None else None,
+            "alta_elev": round(p["elev"]) if p["elev"] is not None else None,
+            "dias": [[f, round(i) if i is not None else None, round(tt, 1) if tt is not None else None]
+                     for f, i, tt in p["dias"]]}
+        print(f"deshielo {r['id']}: isoterma0 máx {salida[r['id']]['iso0_max']} m → {salida[r['id']]['nivel']}")
+    return salida
+
+
 def rios():
     clima = clima_rios()
     rs = CFG["rios"]
+    try:
+        des = deshielo_cuencas()
+    except Exception as ex:
+        print(f"deshielo: ERROR {type(ex).__name__}: {ex}")
+        des = {}
     resp = pedir(FLOOD, params={
         "latitude": ",".join(str(r["lat"]) for r in rs),
         "longitude": ",".join(str(r["lon"]) for r in rs),
@@ -273,7 +340,7 @@ def rios():
                        "pico": {"fecha": pico[0], "q": pico[1]}, "normal": normal,
                        "pct_normal": round(100 * q_hoy / normal) if normal else None,
                        "var_7d": var7, "tendencia": tendencia, "nivel": nivel,
-                       "umbrales": {n: c[n] for n in NIVELES}})
+                       "umbrales": {n: c[n] for n in NIVELES}, "deshielo": des.get(r["id"])})
         if nivel:
             anios = UMB["rio_periodo_retorno_anios"][nivel]
             cuando = "hoy" if q_hoy >= pico[1] else f"hacia el {fecha_larga(pico[0])}"
