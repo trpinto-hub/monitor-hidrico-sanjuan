@@ -1,5 +1,19 @@
 [
  {
+  "id": "74ed191f617c",
+  "fuente": "Lluvia",
+  "oficial": false,
+  "nivel": "amarillo",
+  "titulo": "Lluvia intensa pronosticada para el 14 nov 2026",
+  "zonas": [
+   "Media Agua (Sarmiento)",
+   "Santa Rosa (25 de Mayo)"
+  ],
+  "desde": "2026-11-14",
+  "hasta": "2026-11-14",
+  "emitida": "2026-11-14T00:43-03:00"
+ },
+ {
   "id": "5c51b3954c9a",
   "fuente": "SMN",
   "oficial": true,
