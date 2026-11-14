@@ -1,5 +1,19 @@
 [
  {
+  "id": "630d48607387",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Tormentas",
+  "zonas": [
+   "Valle Fértil",
+   "Caucete"
+  ],
+  "desde": "2026-11-16T15:00:00-03:00",
+  "hasta": "2026-11-17T08:59:59-03:00",
+  "emitida": "2026-11-14T15:34-03:00"
+ },
+ {
   "id": "74ed191f617c",
   "fuente": "Lluvia",
   "oficial": false,
