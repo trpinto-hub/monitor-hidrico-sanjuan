@@ -1,5 +1,27 @@
 [
  {
+  "id": "d7b453e5910b",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Viento zonda",
+  "zonas": [
+   "Ullum",
+   "Zonda",
+   "Calingasta",
+   "Sarmiento",
+   "Rivadavia",
+   "Albardón",
+   "Pocito",
+   "Chimbas",
+   "Iglesia",
+   "Jáchal"
+  ],
+  "desde": "2026-11-16T15:00:00-03:00",
+  "hasta": "2026-11-16T20:59:59-03:00",
+  "emitida": "2026-11-16T07:35-03:00"
+ },
+ {
   "id": "c5214a48447a",
   "fuente": "SMN",
   "oficial": true,
