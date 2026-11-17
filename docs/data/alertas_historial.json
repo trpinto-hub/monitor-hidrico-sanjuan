@@ -1,5 +1,18 @@
 [
  {
+  "id": "4ba0c61cfa45",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "naranja",
+  "titulo": "Aviso a muy corto plazo: Tormentas severas",
+  "zonas": [
+   "Valle Fertil"
+  ],
+  "desde": "",
+  "hasta": "2026-11-17T02:27:00-03:00",
+  "emitida": "2026-11-16T21:52-03:00"
+ },
+ {
   "id": "9d05c583aa13",
   "fuente": "SMN",
   "oficial": true,
