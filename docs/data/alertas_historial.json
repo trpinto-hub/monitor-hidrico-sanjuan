@@ -1,5 +1,20 @@
 [
  {
+  "id": "1ef61691305a",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Nevadas",
+  "zonas": [
+   "Calingasta",
+   "Iglesia",
+   "Zonda"
+  ],
+  "desde": "2026-11-21T09:00:00-03:00",
+  "hasta": "2026-11-21T14:59:59-03:00",
+  "emitida": "2026-11-20T09:57-03:00"
+ },
+ {
   "id": "c3a688f7fda4",
   "fuente": "SMN",
   "oficial": true,
