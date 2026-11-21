@@ -1,5 +1,59 @@
 [
  {
+  "id": "b7cca155a1fd",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Viento",
+  "zonas": [
+   "Iglesia",
+   "Calingasta",
+   "Ullum"
+  ],
+  "desde": "2026-11-21T15:00:00-03:00",
+  "hasta": "2026-11-21T20:59:59-03:00",
+  "emitida": "2026-11-20T21:55-03:00"
+ },
+ {
+  "id": "05cc86113a4e",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Viento zonda",
+  "zonas": [
+   "Ullum",
+   "Zonda",
+   "Calingasta",
+   "Sarmiento",
+   "Rivadavia",
+   "Albardón",
+   "Pocito",
+   "Chimbas",
+   "Iglesia",
+   "Jáchal",
+   "Rawson",
+   "9 de Julio",
+   "Capital"
+  ],
+  "desde": "2026-11-21T15:00:00-03:00",
+  "hasta": "2026-11-21T20:59:59-03:00",
+  "emitida": "2026-11-20T21:55-03:00"
+ },
+ {
+  "id": "6975ef71b6ea",
+  "fuente": "SMN",
+  "oficial": true,
+  "nivel": "amarillo",
+  "titulo": "Alerta SMN: Tormentas",
+  "zonas": [
+   "Valle Fértil",
+   "Caucete"
+  ],
+  "desde": "2026-11-21T03:00:00-03:00",
+  "hasta": "2026-11-21T08:59:59-03:00",
+  "emitida": "2026-11-20T21:55-03:00"
+ },
+ {
   "id": "1ef61691305a",
   "fuente": "SMN",
   "oficial": true,
