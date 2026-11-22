@@ -1,5 +1,19 @@
 [
  {
+  "id": "f459f75fcc40",
+  "fuente": "Lluvia",
+  "oficial": false,
+  "nivel": "amarillo",
+  "titulo": "Lluvia intensa pronosticada para el 24 nov 2026",
+  "zonas": [
+   "Los Berros (Sarmiento)",
+   "Media Agua (Sarmiento)"
+  ],
+  "desde": "2026-11-24",
+  "hasta": "2026-11-24",
+  "emitida": "2026-11-22T00:49-03:00"
+ },
+ {
   "id": "b7cca155a1fd",
   "fuente": "SMN",
   "oficial": true,
