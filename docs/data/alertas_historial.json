@@ -1,5 +1,18 @@
 [
  {
+  "id": "9c289823e594",
+  "fuente": "Lluvia",
+  "oficial": false,
+  "nivel": "amarillo",
+  "titulo": "Lluvia intensa pronosticada para el 25 nov 2026",
+  "zonas": [
+   "San Agustín de Valle Fértil"
+  ],
+  "desde": "2026-11-25",
+  "hasta": "2026-11-25",
+  "emitida": "2026-11-24T21:59-03:00"
+ },
+ {
   "id": "fb65854f3527",
   "fuente": "Lluvia",
   "oficial": false,
